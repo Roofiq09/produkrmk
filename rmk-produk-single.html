@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <div class="produk-popup-container">
     <div class="produk-grid">
-        <div class="rmk-loading">
-            <div class="rmk-loading-spinner"></div>
-            <p>Memuat produk...</p>
-        </div>
+        <!-- PRODUK AKAN DIMUAT DI SINI -->
     </div>
-    <div class="produk-readmore-wrap"><button id="produk-readmore" style="display:none">Read More</button></div>
+    <div class="produk-readmore-wrap">
+        <button id="produk-readmore">Read More</button>
+    </div>
 </div>
 
 <style>
-/* CSS SAMA PERSIS seperti kode PHP original */
+/* CSS SAMA PERSIS dengan kode PHP original */
 .produk-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
     justify-items: center;
+    padding: 20px 0;
 }
 .produk-item {
     text-align: center;
@@ -113,26 +113,6 @@
     #produk-readmore { display:inline-block; }
 }
 
-/* Loading state */
-.rmk-loading {
-    text-align: center;
-    padding: 40px;
-    color: #666;
-    grid-column: 1 / -1;
-}
-.rmk-loading-spinner {
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #3498db;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
 .rmk-error {
     text-align: center;
     padding: 40px;
@@ -140,197 +120,126 @@
     background: #fff5f5;
     border-radius: 8px;
     margin: 20px;
-    grid-column: 1 / -1;
 }
 </style>
 
 <script>
-// FUNGSI UTAMA - Tidak perlu backend/server file
-async function loadRMKProduk() {
+// DATA PRODUK HARCODE - Ganti dengan data produk RMK asli
+const produkData = [
+    {
+        image: "https://rmk.co.id/wp-content/uploads/2024/01/conblock-k-300.jpg",
+        title: "Conblock K-300",
+        link: "https://rmk.co.id/product/conblock-k-300/"
+    },
+    {
+        image: "https://rmk.co.id/wp-content/uploads/2024/01/conblock-k-250.jpg",
+        title: "Conblock K-250",
+        link: "https://rmk.co.id/product/conblock-k-250/"
+    },
+    {
+        image: "https://rmk.co.id/wp-content/uploads/2024/01/conblock-u-ditch-2024.jpg",
+        title: "Conblock U-Ditch",
+        link: "https://rmk.co.id/product/conblock-u-ditch/"
+    },
+    {
+        image: "https://rmk.co.id/wp-content/uploads/2024/01/kanstin-2024.jpg",
+        title: "Kanstin",
+        link: "https://rmk.co.id/product/kanstin/"
+    },
+    {
+        image: "https://rmk.co.id/wp-content/uploads/2024/01/paving-block-2024.jpg",
+        title: "Paving Block",
+        link: "https://rmk.co.id/product/paving-block/"
+    },
+    {
+        image: "https://rmk.co.id/wp-content/uploads/2024/01/roster-2024.jpg",
+        title: "Roster",
+        link: "https://rmk.co.id/product/roster/"
+    },
+    {
+        image: "https://rmk.co.id/wp-content/uploads/2024/01/grass-block-2024.jpg",
+        title: "Grass Block",
+        link: "https://rmk.co.id/product/grass-block/"
+    },
+    {
+        image: "https://rmk.co.id/wp-content/uploads/2024/01/topius-2024.jpg",
+        title: "Topi U/Saluran U",
+        link: "https://rmk.co.id/product/topiusaluran-u/"
+    }
+];
+
+// FUNGSI RENDER PRODUK
+function renderProduk() {
     const container = document.querySelector('.produk-grid');
     if (!container) return;
     
-    try {
-        // DAFTAR PROXY GRATIS - pilih salah satu
-        const proxyList = [
-            // Proxy 1 (utama)
-            'https://api.allorigins.win/raw?url=',
-            // Proxy 2 (cadangan 1)
-            'https://corsproxy.io/?',
-            // Proxy 3 (cadangan 2) 
-            'https://api.codetabs.com/v1/proxy/?quest=',
-            // Proxy 4 (cadangan 3)
-            'https://thingproxy.freeboard.io/fetch/',
-            // Proxy 5 (cadangan 4)
-            'https://cors-anywhere.herokuapp.com/'
-        ];
-        
-        const targetUrl = 'https://rmk.co.id/produk/';
-        
-        // Coba semua proxy sampai ada yang berhasil
-        let html = '';
-        let lastError = '';
-        
-        for (let i = 0; i < proxyList.length; i++) {
-            try {
-                console.log(`Mencoba proxy ${i + 1}: ${proxyList[i]}`);
-                
-                const proxyUrl = proxyList[i];
-                const fullUrl = proxyUrl + encodeURIComponent(targetUrl);
-                
-                const response = await fetch(fullUrl, {
-                    headers: {
-                        'Accept': 'text/html',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                    },
-                    signal: AbortSignal.timeout(10000) // timeout 10 detik
-                });
-                
-                if (response.ok) {
-                    html = await response.text();
-                    console.log(`Proxy ${i + 1} BERHASIL`);
-                    break;
-                } else {
-                    lastError = `Proxy ${i + 1} gagal: HTTP ${response.status}`;
-                }
-            } catch (err) {
-                lastError = `Proxy ${i + 1} error: ${err.message}`;
-                console.warn(lastError);
-                // Lanjut ke proxy berikutnya
-            }
-        }
-        
-        if (!html) {
-            throw new Error(`Semua proxy gagal. Error terakhir: ${lastError}`);
-        }
-        
-        // Parse HTML
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        
-        // Cari produk
-        const produkItems = doc.querySelectorAll('.eael-filterable-gallery-item');
-        
-        if (produkItems.length === 0) {
-            container.innerHTML = '<div class="rmk-error">Produk tidak ditemukan.</div>';
-            return;
-        }
-        
-        // Render produk
-        let gridHTML = '';
-        let popupsHTML = '';
-        
-        produkItems.forEach((item, i) => {
-            // Ambil gambar
-            const imgTag = item.querySelector('img');
-            const img = imgTag ? imgTag.src : '';
-            
-            // Ambil judul
-            let title = 'Tanpa Judul';
-            const titleTags = item.querySelector('h2, h3, h4');
-            if (titleTags) {
-                title = titleTags.textContent.trim();
-            }
-            
-            // Ambil link
-            const linkTag = item.querySelector('a');
-            const link = linkTag ? linkTag.href : '#';
-            
-            // HTML card
-            gridHTML += `
-            <div class="produk-item" onclick="openProdukPopup(${i})">
-                <img src="${img}" alt="${title}" loading="lazy" onerror="this.src='https://placehold.co/300x200/e0e0e0/666?text=Produk+RMK'">
-                <h4>${title}</h4>
-            </div>`;
-            
-            // HTML popup
-            popupsHTML += `
-            <div id="produk-popup-${i}" class="produk-popup">
-                <div class="popup-inner">
-                    <button class="popup-close" onclick="closeProdukPopup(${i})">&times;</button>
-                    <iframe src="${link}" title="${title}"></iframe>
-                </div>
-            </div>`;
-        });
-        
-        // Update tampilan
-        container.innerHTML = gridHTML + popupsHTML;
-        
-        // Setup tombol Read More
-        const btn = document.getElementById('produk-readmore');
-        if (btn) {
-            // Event listener
-            btn.addEventListener('click', function() {
-                document.querySelectorAll(".produk-item").forEach(function(el){
-                    el.style.display = "block";
-                });
-                btn.style.display = "none";
-            });
-            
-            // Tampilkan/hide tombol berdasarkan screen size
-            updateReadMoreButton();
-        }
-        
-    } catch (error) {
-        console.error('Error loading produk:', error);
-        container.innerHTML = `
-            <div class="rmk-error">
-                <p>⚠️ Gagal memuat produk</p>
-                <p><small>Error: ${error.message}</small></p>
-                <button onclick="location.reload()" style="margin-top:10px; padding:8px 16px; background:#3498db; color:white; border:none; border-radius:4px; cursor:pointer">
-                    Coba Lagi
-                </button>
-            </div>
-        `;
+    if (produkData.length === 0) {
+        container.innerHTML = '<div class="rmk-error">Produk tidak ditemukan.</div>';
+        return;
     }
-}
-
-// Fungsi update tombol Read More
-function updateReadMoreButton() {
-    const btn = document.getElementById('produk-readmore');
-    if (!btn) return;
     
-    if (window.innerWidth <= 768) {
-        // Di mobile: sembunyikan item ke-4 dan seterusnya
-        const items = document.querySelectorAll('.produk-item');
-        items.forEach((item, index) => {
-            if (index >= 3) {
-                item.style.display = 'none';
-            } else {
-                item.style.display = 'block';
-            }
+    let gridHTML = '';
+    let popupsHTML = '';
+    
+    produkData.forEach((produk, i) => {
+        // HTML card - SAMA PERSIS dengan PHP
+        gridHTML += `
+        <div class="produk-item" onclick="openProdukPopup(${i})">
+            <img src="${produk.image}" alt="${produk.title}" loading="lazy">
+            <h4>${produk.title}</h4>
+        </div>`;
+        
+        // HTML popup - SAMA PERSIS dengan PHP
+        popupsHTML += `
+        <div id="produk-popup-${i}" class="produk-popup">
+            <div class="popup-inner">
+                <button class="popup-close" onclick="closeProdukPopup(${i})">&times;</button>
+                <iframe src="${produk.link}"></iframe>
+            </div>
+        </div>`;
+    });
+    
+    container.innerHTML = gridHTML + popupsHTML;
+    
+    // Setup tombol Read More
+    const btn = document.getElementById('produk-readmore');
+    if (btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll(".produk-item").forEach(function(el){
+                el.style.display = "block";
+            });
+            btn.style.display = "none";
         });
-        btn.style.display = 'inline-block';
-    } else {
-        // Di desktop: tampilkan semua
-        document.querySelectorAll('.produk-item').forEach(item => {
-            item.style.display = 'block';
-        });
-        btn.style.display = 'none';
+        
+        // Atur tampilan awal untuk mobile
+        if (window.innerWidth <= 768) {
+            const items = document.querySelectorAll('.produk-item');
+            items.forEach((item, index) => {
+                if (index >= 3) {
+                    item.style.display = 'none';
+                }
+            });
+            btn.style.display = 'inline-block';
+        } else {
+            btn.style.display = 'none';
+        }
     }
 }
 
-// Fungsi popup
+// Fungsi popup - SAMA PERSIS
 window.openProdukPopup = function(i) {
-    const popup = document.getElementById("produk-popup-" + i);
-    if (popup) {
-        popup.style.display = "flex";
-        document.body.style.overflow = "hidden";
-    }
+    document.getElementById("produk-popup-" + i).style.display = "flex";
+    document.body.style.overflow = "hidden";
 }
 
 window.closeProdukPopup = function(i) {
-    const popup = document.getElementById("produk-popup-" + i);
-    if (popup) {
-        popup.style.display = "none";
-        document.body.style.overflow = "auto";
-    }
+    document.getElementById("produk-popup-" + i).style.display = "none";
+    document.body.style.overflow = "auto";
 }
 
-// Event listeners untuk popup
-document.addEventListener('DOMContentLoaded', function() {
-    // Load produk
-    loadRMKProduk();
+// Event listeners
+document.addEventListener("DOMContentLoaded", function() {
+    renderProduk();
     
     // Close popup dengan ESC
     document.addEventListener('keydown', function(e) {
@@ -350,14 +259,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Responsif saat resize window
-    window.addEventListener('resize', updateReadMoreButton);
+    // Responsif saat resize
+    window.addEventListener('resize', function() {
+        const btn = document.getElementById('produk-readmore');
+        if (!btn) return;
+        
+        if (window.innerWidth <= 768) {
+            const items = document.querySelectorAll('.produk-item');
+            items.forEach((item, index) => {
+                if (index >= 3) {
+                    item.style.display = 'none';
+                } else {
+                    item.style.display = 'block';
+                }
+            });
+            btn.style.display = 'inline-block';
+        } else {
+            document.querySelectorAll('.produk-item').forEach(item => {
+                item.style.display = 'block';
+            });
+            btn.style.display = 'none';
+        }
+    });
 });
-
-// Fallback jika gambar error
-document.addEventListener('error', function(e) {
-    if (e.target.tagName === 'IMG' && e.target.closest('.produk-item')) {
-        e.target.src = 'https://placehold.co/300x200/e0e0e0/666?text=Produk+RMK';
-    }
-}, true);
 </script>
