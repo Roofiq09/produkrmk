@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RMK Produk Gallery</title>
+    <style>
+        /* Reset dan wrapper */
+        .rmk-produk-wrapper {
+            width: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Grid responsif */
+        .produk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 25px;
+            justify-items: center;
+            padding: 20px 0;
+        }
+
+        .produk-item {
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 250px;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid #eaeaea;
+        }
+
+        .produk-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .produk-item img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .produk-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .produk-item h4 {
+            margin: 15px 10px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            line-height: 1.4;
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Popup Overlay */
+        .produk-popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 999999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .produk-popup {
+            position: relative;
+            width: 100%;
+            max-width: 1100px;
+            height: 85vh;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 45px;
+            height: 45px;
+            border: none;
+            border-radius: 50%;
+            background: #e74c3c;
+            color: white;
+            font-size: 26px;
+            font-weight: bold;
+            line-height: 1;
+            text-align: center;
+            cursor: pointer;
+            padding: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .popup-close:hover {
+            background: #c0392b;
+            transform: scale(1.1);
+        }
+
+        .popup-content {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .popup-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* Read More button */
+        .produk-readmore-wrap {
+            text-align: center;
+            margin: 30px 0;
+            padding: 10px;
+        }
+
+        #produk-readmore {
+            display: none;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        #produk-readmore:hover {
+            background: linear-gradient(135deg, #2980b9, #1f6394);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        #produk-readmore:active {
+            transform: translateY(0);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .rmk-produk-wrapper {
+                padding: 15px;
+            }
+            
+            .produk-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 15px;
+                padding: 15px 0;
+            }
+            
+            .produk-item {
+                max-width: 180px;
+            }
+            
+            .produk-item img {
+                height: 140px;
+            }
+            
+            .produk-item h4 {
+                font-size: 14px;
+                min-height: 40px;
+                margin: 12px 8px;
+            }
+            
+            .produk-popup {
+                height: 90vh;
+                border-radius: 12px;
+                margin: 10px;
+            }
+            
+            .popup-close {
+                width: 40px;
+                height: 40px;
+                font-size: 22px;
+                top: 10px;
+                right: 10px;
+            }
+            
+            /* Mobile: tampilkan hanya 3 dulu */
+            .produk-item.mobile-hidden {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .produk-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .produk-item {
+                max-width: 100%;
+            }
+        }
+
+        /* Loading state */
+        .rmk-loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .rmk-loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .rmk-error {
+            text-align: center;
+            padding: 40px;
+            color: #e74c3c;
+            background: #fff5f5;
+            border-radius: 8px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="rmk-produk-wrapper">
+        <div id="rmk-produk-container">
+            <div class="rmk-loading">
+                <div class="rmk-loading-spinner"></div>
+                <p>Memuat produk...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class RMKProdukPopup {
+            constructor() {
+                this.containerId = 'rmk-produk-container';
+                this.products = [];
+                this.init();
+            }
+
+            async init() {
+                try {
+                    await this.loadProducts();
+                    this.render();
+                    this.setupEvents();
+                } catch (error) {
+                    this.showError('Gagal memuat produk. Silakan refresh halaman.');
+                }
+            }
+
+            async loadProducts() {
+                try {
+                    // Gunakan proxy untuk hindari CORS
+                    const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+                    const targetUrl = 'https://rmk.co.id/produk/';
+                    
+                    const response = await fetch(proxyUrl + targetUrl, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    
+                    if (!response.ok) throw new Error('Gagal ambil data');
+                    
+                    const html = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    const produkItems = doc.querySelectorAll('.eael-filterable-gallery-item');
+                    
+                    this.products = Array.from(produkItems).map((item, index) => {
+                        const imgTag = item.querySelector('img');
+                        const titleTag = item.querySelector('h2, h3, h4');
+                        const linkTag = item.querySelector('a');
+                        
+                        return {
+                            id: index,
+                            image: imgTag ? imgTag.src : '',
+                            title: titleTag ? titleTag.textContent.trim() : 'Produk RMK',
+                            link: linkTag ? linkTag.href : '#'
+                        };
+                    });
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    throw error;
+                }
+            }
+
+            render() {
+                const container = document.getElementById(this.containerId);
+                if (!container) return;
+                
+                if (this.products.length === 0) {
+                    container.innerHTML = '<div class="rmk-error">Produk tidak ditemukan.</div>';
+                    return;
+                }
+
+                const html = `
+                    <div class="produk-grid">
+                        ${this.products.map((product, index) => `
+                            <div class="produk-item ${index >= 3 ? 'mobile-hidden' : ''}" data-id="${product.id}">
+                                <img src="${product.image}" alt="${product.title}" loading="lazy">
+                                <h4>${product.title}</h4>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="produk-readmore-wrap">
+                        <button id="produk-readmore">Lihat Semua Produk</button>
+                    </div>
+                    
+                    <div class="produk-popup-overlay" id="produk-popup-overlay">
+                        <div class="produk-popup">
+                            <button class="popup-close">&times;</button>
+                            <div class="popup-content">
+                                <iframe class="popup-iframe" id="popup-iframe" src="" title="Detail Produk"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.innerHTML = html;
+                
+                // Tampilkan tombol Read More di mobile
+                if (window.innerWidth <= 768) {
+                    const btn = document.getElementById('produk-readmore');
+                    if (btn) btn.style.display = 'inline-block';
+                }
+            }
+
+            setupEvents() {
+                // Klik produk item
+                document.addEventListener('click', (e) => {
+                    const item = e.target.closest('.produk-item');
+                    if (item) {
+                        const productId = item.getAttribute('data-id');
+                        this.openPopup(productId);
+                        return;
+                    }
+                    
+                    // Close popup
+                    const closeBtn = e.target.closest('.popup-close');
+                    const overlay = e.target.closest('#produk-popup-overlay');
+                    
+                    if (closeBtn || overlay) {
+                        this.closePopup();
+                    }
+                });
+                
+                // Read More button
+                const readMoreBtn = document.getElementById('produk-readmore');
+                if (readMoreBtn) {
+                    readMoreBtn.addEventListener('click', () => {
+                        document.querySelectorAll('.produk-item.mobile-hidden').forEach(item => {
+                            item.style.display = 'block';
+                            item.classList.remove('mobile-hidden');
+                        });
+                        readMoreBtn.style.display = 'none';
+                    });
+                }
+                
+                // Close dengan ESC
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') this.closePopup();
+                });
+                
+                // Responsive saat resize
+                window.addEventListener('resize', this.handleResize.bind(this));
+            }
+
+            handleResize() {
+                const readMoreBtn = document.getElementById('produk-readmore');
+                if (!readMoreBtn) return;
+                
+                if (window.innerWidth <= 768) {
+                    // Sembunyikan item ke-4 dan seterusnya di mobile
+                    const allItems = document.querySelectorAll('.produk-item');
+                    allItems.forEach((item, index) => {
+                        if (index >= 3) {
+                            item.style.display = 'none';
+                            item.classList.add('mobile-hidden');
+                        }
+                    });
+                    readMoreBtn.style.display = 'inline-block';
+                } else {
+                    // Tampilkan semua di desktop
+                    document.querySelectorAll('.produk-item').forEach(item => {
+                        item.style.display = 'block';
+                        item.classList.remove('mobile-hidden');
+                    });
+                    readMoreBtn.style.display = 'none';
+                }
+            }
+
+            openPopup(productId) {
+                const product = this.products.find(p => p.id == productId);
+                if (!product) return;
+                
+                const overlay = document.getElementById('produk-popup-overlay');
+                const iframe = document.getElementById('popup-iframe');
+                
+                iframe.src = product.link;
+                overlay.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+
+            closePopup() {
+                const overlay = document.getElementById('produk-popup-overlay');
+                const iframe = document.getElementById('popup-iframe');
+                
+                iframe.src = '';
+                overlay.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+
+            showError(message) {
+                const container = document.getElementById(this.containerId);
+                if (container) {
+                    container.innerHTML = `<div class="rmk-error">${message}</div>`;
+                }
+            }
+        }
+
+        // Inisialisasi saat halaman siap
+        document.addEventListener('DOMContentLoaded', () => {
+            new RMKProdukPopup();
+        });
+    </script>
+</body>
+</html>
